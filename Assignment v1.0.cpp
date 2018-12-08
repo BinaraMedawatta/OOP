@@ -5,22 +5,26 @@
 #include <sstream>
 #include <iterator>
 #include <cmath>
+#include <iomanip>
 using namespace std;
 
 class Results{
-	int marks[100][3];	// index, mark, grade
+	
 	float average;
 	int total;
 	int i;
 	
 	public : 
+		int marks[100][3];	// index, mark, grade
 		string subjectCode;
 		int count;
+		int gradeC[5];	// Grades count A,B,C,D;
 		Results(){
 			i=0;
 			count=0;
 			average=0;
 			total=0;
+			gradeC[5] = {0};
 		}
 		void getData(int id, int mark);	
 		void findAverage();	
@@ -31,26 +35,22 @@ class Results{
 };
 
 void Results :: getGradesCount(){
-	int A=0;
-	int B=0;
-	int C=0;
-	int D=0;
-	int F=0;
 	
 	for(int j=0; j<count; j++){
-		if('A'==(char)marks[j][2]) A++;
-		else if('B'==(char)marks[j][2]) B++;
-		else if('C'==(char)marks[j][2]) C++;
-		else if('D'==(char)marks[j][2]) D++;
-		else F++;
+		if('A'==(char)marks[j][2]) gradeC[0]++;
+		else if('B'==(char)marks[j][2]) gradeC[1]++;
+		else if('C'==(char)marks[j][2]) gradeC[2]++;
+		else if('D'==(char)marks[j][2]) gradeC[3]++;
+		else gradeC[4]++;
 		
 	}
-	cout << "Number of grades" << endl;
-	cout << "  A's' : " << A<< endl;	
-	cout << "  B's' : " << B << endl;	
-	cout << "  C's' : " << C << endl;	
-	cout << "  D's' : " << D << endl;	
-	cout << "  F's' : " << F << endl;	
+//	cout << "Number of grades" << endl;
+//	cout << "  A's' : " << gradeC[0]<< endl;	
+//	cout << "  B's' : " << gradeC[1] << endl;	
+//	cout << "  C's' : " << gradeC[2] << endl;	
+//	cout << "  D's' : " << gradeC[3] << endl;	
+//	cout << "  F's' : " << gradeC[4] << endl;	
+	
 }
 
 char getGrade(int n){
@@ -98,6 +98,7 @@ void Results :: putData(){
 
 int main(){
 	string line;
+	int err;
 	int n=0;
 	int j=-1;
 	int x, m;
@@ -171,50 +172,108 @@ int main(){
 
 	else cout << "Unable to open file"; 
 	
-	for(int k=0; k<j+1; k++){
-		sub[k].putData();
-		sub[k].findAverage();
-		sub[k].calculateSD();
-		sub[k].getGradesCount();
-		cout << endl;
-	}
+//	for(int k=0; k<j+1; k++){
+//		sub[k].putData();
+//		sub[k].findAverage();
+//		sub[k].calculateSD();
+//		sub[k].getGradesCount();
+//		cout << endl;
+//	}
 
-//	do{
-//		cout << "+----------------------------+" << endl;
-//		cout << "| 1. Display Subject         |" << endl;
-//		cout << "| 2. Display Student         |" << endl;
-//		cout << "| 3. Display Subject Summary |" << endl;
-//		cout << "| 4. Save Summaries          |" << endl;
-//		cout << "| 5. Exit Program            |" << endl;
-//		cout << "+----------------------------+" << endl;
-//		
-//		cin >> x;
-//		
-//		switch(x){
-//			case 1 :
-//				cout << "Enter 7 character Subject Code : ";
-//				cin >> subCode;
-//				break;
-//			
-//			case 2 : 
-//				int stdNo;
-//				cout << "Enter Student Number : ";
-//				cin >> stdNo;
-//				
-//			case 3 : 
-//				cout << "Enter 7 character Subject Code : ";
-//				cin >> subCode;
-//				break;
-//				
-//			case 4 :
-//				ofstream myfile_O;
-//				myfile_O.open ("example.txt");
-//				myfile_O << "Writing this to a file.\n";
-//				myfile_O.close();
-//				break;
-//								
-//		}
-//	}while(x!=5);
+	do{
+		cout << "+----------------------------+" << endl;
+		cout << "| 1. Display Subject         |" << endl;
+		cout << "| 2. Display Student         |" << endl;
+		cout << "| 3. Display Subject Summary |" << endl;
+		cout << "| 4. Save Summaries          |" << endl;
+		cout << "| 5. Exit Program            |" << endl;
+		cout << "+----------------------------+" << endl;
+		
+		cout << "Enter your Choice : ";
+		
+		cin >> x;
+		
+		switch(x){
+			case 1 :
+				cout << "Enter 7 character Subject Code : ";
+				cin >> subCode;
+//				cout << subCode << endl;
+				err=1;
+				
+				for(int k=0; k<j+1; k++){
+					if(sub[k].subjectCode==subCode){
+						sub[k].putData();
+						err=0;
+						break;
+					}
+				}
+				
+				if(err){
+					cout << "Enter valid Subject Code" << endl;
+					err=0;
+				}
+				
+				break;
+			
+			case 2 : 
+				int stdNo;
+				cout << "Enter Student Number : ";
+				cin >> stdNo;
+//				cout << stdNo << endl;
+				
+				for(int k=0; k<j+1; k++){
+					for(int l=0; l<sub[k].count; l++){
+						if(stdNo==sub[k].marks[l][0])
+							cout << sub[k].subjectCode << " " << sub[k].marks[l][1] << " " << (char)sub[k].marks[l][2] << endl;
+					}
+				}
+				break;
+				
+			case 3 : 
+				cout << "Enter 7 character Subject Code : ";
+				cin >> subCode;
+				
+				err=1;
+				
+				for(int k=0; k<j+1; k++){
+					if(sub[k].subjectCode==subCode){
+						sub[k].findAverage();
+						sub[k].calculateSD();
+						sub[k].getGradesCount();
+						err=0;
+						break;
+					}
+				}
+				
+				if(err){
+					cout << "Enter valid Subject Code" << endl;
+					err=0;
+				}
+				
+				break;
+				
+			case 4 :
+				ofstream myfile_O;
+				myfile_O.open ("Summary.txt");
+				
+				for(int k=0; k<j+1; k++){
+					myfile_O << sub[k].subjectCode << " " << sub[k].count << " ";
+					sub[k].getGradesCount();
+					myfile_O << setprecision(2) << fixed;
+					for(int q=0; q<5; q++){
+						myfile_O << (char)(q+65) << " " << (((float)sub[k].gradeC[q])/sub[k].count)*100 << "%" << " ";	
+					}
+					
+					myfile_O << endl;
+				}
+				
+				myfile_O.close();
+				
+				cout << "Saved summaries to 'Summary.txt' file" << endl;
+				break;
+								
+		}
+	}while(x!=5);
 	
 	return 0;
 }
