@@ -19,13 +19,7 @@ class Results{
 		string subjectCode;
 		int count;
 		int gradeC[5];	// Grades count A,B,C,D;
-		Results(){
-			i=0;
-			count=0;
-			average=0;
-			total=0;
-			gradeC[5] = {0};
-		}
+		Results();
 		void getData(int id, int mark);	
 		void findAverage();	
 		void putData();
@@ -33,6 +27,14 @@ class Results{
 		void getGradesCount();
 		
 };
+
+Results :: Results(){
+	i=0;
+	count=0;
+	average=0;
+	total=0;
+	gradeC[5] = {0};
+}
 
 void Results :: getGradesCount(){
 	
@@ -42,14 +44,7 @@ void Results :: getGradesCount(){
 		else if('C'==(char)marks[j][2]) gradeC[2]++;
 		else if('D'==(char)marks[j][2]) gradeC[3]++;
 		else gradeC[4]++;
-		
 	}
-//	cout << "Number of grades" << endl;
-//	cout << "  A's' : " << gradeC[0]<< endl;	
-//	cout << "  B's' : " << gradeC[1] << endl;	
-//	cout << "  C's' : " << gradeC[2] << endl;	
-//	cout << "  D's' : " << gradeC[3] << endl;	
-//	cout << "  F's' : " << gradeC[4] << endl;	
 	
 }
 
@@ -105,7 +100,24 @@ int main(){
 	string subject;
 	string subCode;
 	Results sub[10];
-	ifstream myfile ("subjdata.txt");
+	
+	label:
+		
+	int sel;
+	string filename_i = "subjdata.txt";
+	string filename_o = "Summary.txt";
+		
+	cout << "Select," << endl;
+	cout << "0. to use default file (subjdata.txt)" << endl;
+	cout << "1. to enter a file name." << endl;
+	cin >> sel;
+	
+	if(sel){
+		cout << "Enter file name : ";
+		cin >> filename_i;
+	}
+	
+	ifstream myfile (filename_i);
 	
 	if (myfile.is_open()){
 	
@@ -117,28 +129,17 @@ int main(){
     			istream_iterator<string> beg(buf), end;
     
 				vector<string> tokens(beg, end);
-				
 				stringstream num(tokens[1]);	// tokens[1] = marks count
 				
 				num >> n;	// casting string to int
-//				cout << n << endl;	// marks count 
 				
 				sub[j].subjectCode = tokens[0];
 				sub[j].count = n;
-//				cout << tokens[1] << endl;
-				
-//				cout << subject << endl;
-//				Results subject;
-				
-//    			for(auto& s: tokens)
-//        			cout << '"' << s << '"' << endl;
 
 				n++;
-	
 			}
 			
-			else{// Getting the marks and student numbers
-				
+			else{	// Getting the marks and student numbers
 				istringstream buf(line);
     			istream_iterator<string> beg(buf), end;
     
@@ -147,38 +148,19 @@ int main(){
 				stringstream mark(tokens[1]);
 				stringstream num(tokens[0]);
 				
-					// tokens[1] = marks count
 				mark >> m;	// casting string to int
 				num >> x;
 				
 				sub[j].getData(x, m);
-
-//				cout << m << endl;	// marks count 
-//				cout << x << endl;
-				
-//    			for(auto& s: tokens)
-//        			cout << '"' << s << '"' << endl;
-				
 			}
-			
-//			cout << line << '\n';
 			n--;
-	
 		}
-	
 		myfile.close();
-	
 	}
-
-	else cout << "Unable to open file"; 
-	
-//	for(int k=0; k<j+1; k++){
-//		sub[k].putData();
-//		sub[k].findAverage();
-//		sub[k].calculateSD();
-//		sub[k].getGradesCount();
-//		cout << endl;
-//	}
+	else{
+		cout << "Unable to open file, enter valid file name" << endl; 
+		goto label;
+	}
 
 	do{
 		cout << "+----------------------------+" << endl;
@@ -189,15 +171,13 @@ int main(){
 		cout << "| 5. Exit Program            |" << endl;
 		cout << "+----------------------------+" << endl;
 		
-		cout << "Enter your Choice : ";
-		
+		cout << "Enter your Choice : ";	
 		cin >> x;
 		
 		switch(x){
 			case 1 :
 				cout << "Enter 7 character Subject Code : ";
 				cin >> subCode;
-//				cout << subCode << endl;
 				err=1;
 				
 				for(int k=0; k<j+1; k++){
@@ -219,7 +199,6 @@ int main(){
 				int stdNo;
 				cout << "Enter Student Number : ";
 				cin >> stdNo;
-//				cout << stdNo << endl;
 				
 				for(int k=0; k<j+1; k++){
 					for(int l=0; l<sub[k].count; l++){
@@ -253,8 +232,18 @@ int main(){
 				break;
 				
 			case 4 :
+				cout << "Select," << endl;
+				cout << "0. Save to default file (Summary.txt)" << endl;
+				cout << "1. Save to new file" << endl;
+				cin >> sel;
+				
+				if(sel){
+					cout << "Enter new file name : ";
+					cin >> filename_o;
+				}				
+				
 				ofstream myfile_O;
-				myfile_O.open ("Summary.txt");
+				myfile_O.open (filename_o);
 				
 				for(int k=0; k<j+1; k++){
 					myfile_O << sub[k].subjectCode << " " << sub[k].count << " ";
@@ -269,7 +258,7 @@ int main(){
 				
 				myfile_O.close();
 				
-				cout << "Saved summaries to 'Summary.txt' file" << endl;
+				cout << "Saved summaries to " << filename_o << " file" << endl;
 				break;
 								
 		}
