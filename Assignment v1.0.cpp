@@ -6,7 +6,11 @@
 #include <iterator>
 #include <cmath>
 #include <iomanip>
+#include <limits>
 using namespace std;
+
+const int MAXSUBJECTS = 10;
+const int MAXSTUDENTS = 100;
 
 class Results{
 	
@@ -15,7 +19,7 @@ class Results{
 	int i;
 	
 	public : 
-		int marks[100][3];	// index, mark, grade
+		int marks[MAXSTUDENTS][3];	// index, mark, grade
 		string subjectCode;
 		int count;
 		int gradeC[5];	// Grades count A,B,C,D;
@@ -25,7 +29,6 @@ class Results{
 		void putData();
 		void calculateSD();
 		void getGradesCount();
-		
 };
 
 Results :: Results(){
@@ -34,6 +37,127 @@ Results :: Results(){
 	average=0;
 	total=0;
 	gradeC[5] = {0};
+}
+
+int openFile(Results sub[10], string filename_i){
+	
+	string line;
+	int n=0;
+	int j=-1;
+	int m, x;
+	string subject;
+	string subCode;
+	
+	ifstream myfile (filename_i);
+	
+	if (myfile.is_open()){
+	
+		while(getline(myfile,line)){
+	
+			if(n==0){	// Getting the subject code
+    			j++;
+				istringstream buf(line);
+    			istream_iterator<string> beg(buf), end;
+    
+				vector<string> tokens(beg, end);
+				stringstream num(tokens[1]);	// tokens[1] = marks count
+				
+				num >> n;	// casting string to int
+				
+				sub[j].subjectCode = tokens[0];
+				sub[j].count = n;
+
+				n++;
+			}
+			
+			else{	// Getting the marks and student numbers
+				istringstream buf(line);
+    			istream_iterator<string> beg(buf), end;
+    
+				vector<string> tokens(beg, end);
+				
+				stringstream mark(tokens[1]);
+				stringstream num(tokens[0]);
+				
+				mark >> m;	// casting string to int
+				num >> x;
+				
+				sub[j].getData(x, m);
+			}
+			n--;
+		}
+		myfile.close();
+	}
+	else{
+//		cout << "Unable to open file, enter valid file name" << endl; 
+		return 0;
+//		goto label;
+	}
+	return j;
+}
+
+int displaySubData(Results sub[10], string subCode, int subCount){
+	for(int k=0; k<subCount; k++){
+		if(sub[k].subjectCode==subCode){
+			sub[k].putData();
+			return 0;
+		}
+	}
+}
+
+int displaySubSummary(Results sub[10], string subCode, int subCount){
+	for(int k=0; k<subCount; k++){
+		if(sub[k].subjectCode==subCode){
+			sub[k].findAverage();
+			sub[k].calculateSD();
+			sub[k].getGradesCount();
+			return 0;
+		}
+	}
+}
+
+int displayStuData(Results sub[10], int stdNo, int subCount){
+	int err=1;
+	for(int k=0; k<subCount; k++){
+		for(int l=0; l<sub[k].count; l++){
+			if(stdNo==sub[k].marks[l][0]){
+				cout << sub[k].subjectCode << " " << sub[k].marks[l][1] << " " << (char)sub[k].marks[l][2] << endl;
+				err = 0;
+			}							
+		}
+	}
+	return err;
+}
+
+int saveSummaries(Results sub[10], int subCount, string filename_o){
+	
+	int err=1;
+	ofstream myfile_O;
+	myfile_O.open (filename_o);
+				
+	for(int k=0; k<subCount; k++){
+		myfile_O << sub[k].subjectCode << " " << sub[k].count << " ";
+		sub[k].getGradesCount();
+		myfile_O << setprecision(2) << fixed;
+		for(int q=0; q<5; q++){
+			myfile_O << (char)(q+65) << " " << (((float)sub[k].gradeC[q])/sub[k].count)*100 << "%" << " ";	
+			err = 0;
+		}
+					
+		myfile_O << endl;
+	}			
+	myfile_O.close();
+	
+	return err;
+}
+
+void errorMessages(int error){
+	if(error==0) cout << "Unable to open file, enter valid file name" << endl;		//	can't open file
+	else if(error==1) cout << "Enter valid Subject Code" << endl;					//	invalid subject code
+	else if(error==2) cout << "Enter valid Student Number" << endl;					//	invalid student number
+	else if(error==3) cout << "Enter valid choice" << endl;							//	invalid choice
+	else if(error==4) cout << "Invalid file" << endl;								//	can't write to file
+	
 }
 
 void Results :: getGradesCount(){
@@ -92,14 +216,12 @@ void Results :: putData(){
 }
 
 int main(){
-	string line;
-	int err;
-	int n=0;
-	int j=-1;
-	int x, m;
+	int err, x;
+	int j; // number of subjects -1
 	string subject;
 	string subCode;
-	Results sub[10];
+	
+	Results sub[MAXSUBJECTS];
 	
 	label:
 		
@@ -112,56 +234,29 @@ int main(){
 	cout << "1. to enter a file name." << endl;
 	cin >> sel;
 	
-	if(sel){
-		cout << "Enter file name : ";
+	if(cin.fail() || sel>1){
+    	cin.clear();
+   		cin.ignore(numeric_limits<std::streamsize>::max(), '\n');
+    	errorMessages(3);
+    	goto label;
+	}
+	
+	if(sel==1){
+		cout << "Enter new file name (xxxxx.txt) : ";
 		cin >> filename_i;
-	}
-	
-	ifstream myfile (filename_i);
-	
-	if (myfile.is_open()){
-	
-		while(getline(myfile,line)){
-	
-			if(n==0){	// Getting the subject code
-    			j++;
-				istringstream buf(line);
-    			istream_iterator<string> beg(buf), end;
-    
-				vector<string> tokens(beg, end);
-				stringstream num(tokens[1]);	// tokens[1] = marks count
-				
-				num >> n;	// casting string to int
-				
-				sub[j].subjectCode = tokens[0];
-				sub[j].count = n;
-
-				n++;
-			}
-			
-			else{	// Getting the marks and student numbers
-				istringstream buf(line);
-    			istream_iterator<string> beg(buf), end;
-    
-				vector<string> tokens(beg, end);
-				
-				stringstream mark(tokens[1]);
-				stringstream num(tokens[0]);
-				
-				mark >> m;	// casting string to int
-				num >> x;
-				
-				sub[j].getData(x, m);
-			}
-			n--;
+		
+		if(filename_i.length()<=4 || filename_i.substr(filename_i.length()-4)!=".txt"){
+			filename_i = filename_i + ".txt";
 		}
-		myfile.close();
 	}
-	else{
-		cout << "Unable to open file, enter valid file name" << endl; 
+		
+	j = openFile(sub, filename_i);	
+	
+	if(!j){
+		errorMessages(0);
 		goto label;
 	}
-
+	
 	do{
 		cout << "+----------------------------+" << endl;
 		cout << "| 1. Display Subject         |" << endl;
@@ -178,21 +273,14 @@ int main(){
 			case 1 :
 				cout << "Enter 7 character Subject Code : ";
 				cin >> subCode;
-				err=1;
 				
-				for(int k=0; k<j+1; k++){
-					if(sub[k].subjectCode==subCode){
-						sub[k].putData();
-						err=0;
-						break;
-					}
-				}
+				err=1;
+				err = displaySubData(sub, subCode, j+1);
 				
 				if(err){
-					cout << "Enter valid Subject Code" << endl;
+					errorMessages(1);
 					err=0;
-				}
-				
+				}				
 				break;
 			
 			case 2 : 
@@ -200,12 +288,19 @@ int main(){
 				cout << "Enter Student Number : ";
 				cin >> stdNo;
 				
-				for(int k=0; k<j+1; k++){
-					for(int l=0; l<sub[k].count; l++){
-						if(stdNo==sub[k].marks[l][0])
-							cout << sub[k].subjectCode << " " << sub[k].marks[l][1] << " " << (char)sub[k].marks[l][2] << endl;
-					}
+				if(cin.fail()){
+    				cin.clear();
+    				cin.ignore(numeric_limits<std::streamsize>::max(), '\n');
+    				errorMessages(2);
 				}
+				
+				err = 1;
+				err = displayStuData(sub, stdNo, j+1);
+
+				if(err){
+					errorMessages(2);
+					err=0;
+				}			
 				break;
 				
 			case 3 : 
@@ -214,18 +309,10 @@ int main(){
 				
 				err=1;
 				
-				for(int k=0; k<j+1; k++){
-					if(sub[k].subjectCode==subCode){
-						sub[k].findAverage();
-						sub[k].calculateSD();
-						sub[k].getGradesCount();
-						err=0;
-						break;
-					}
-				}
+				err = displaySubSummary(sub, subCode, j+1);
 				
 				if(err){
-					cout << "Enter valid Subject Code" << endl;
+					errorMessages(1);
 					err=0;
 				}
 				
@@ -237,31 +324,35 @@ int main(){
 				cout << "1. Save to new file" << endl;
 				cin >> sel;
 				
-				if(sel){
-					cout << "Enter new file name : ";
-					cin >> filename_o;
-				}				
-				
-				ofstream myfile_O;
-				myfile_O.open (filename_o);
-				
-				for(int k=0; k<j+1; k++){
-					myfile_O << sub[k].subjectCode << " " << sub[k].count << " ";
-					sub[k].getGradesCount();
-					myfile_O << setprecision(2) << fixed;
-					for(int q=0; q<5; q++){
-						myfile_O << (char)(q+65) << " " << (((float)sub[k].gradeC[q])/sub[k].count)*100 << "%" << " ";	
-					}
-					
-					myfile_O << endl;
+				if(cin.fail() || sel>1){
+    				cin.clear();
+   					cin.ignore(numeric_limits<std::streamsize>::max(), '\n');
+			    	errorMessages(3);
+			    	break;
 				}
 				
-				myfile_O.close();
+				if(sel){
+					cout << "Enter new file name (xxxxx.txt) : ";
+					cin >> filename_o;
+					
+					if(filename_o.length()<=4 || filename_o.substr(filename_o.length()-4)!=".txt"){
+						filename_o = filename_o + ".txt";
+					}
+				}							
 				
-				cout << "Saved summaries to " << filename_o << " file" << endl;
-				break;
-								
+				err = 1;
+				err = saveSummaries(sub, j+1, filename_o);
+				
+				if(err){
+					errorMessages(4);
+				}
+				else{
+					cout << "Saved summaries to " << filename_o << " file" << endl;
+				}				
+				
+				break;								
 		}
+		
 	}while(x!=5);
 	
 	return 0;
