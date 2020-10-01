@@ -118,7 +118,7 @@ float subject::findStdDev(){
 }
 
 void subject::displaySubSum(){
-    cout<<"\t\t"<<"Summary of Subject :"<<subCode<<endl<<endl;
+    cout<<"\n\t\t"<<"Summary of Subject :"<<subCode<<endl<<endl;
     cout<<"Number of Students :"<<noOfStudents<<endl;
     cout<<"Average            :"<<findAvg()<<endl;
     cout<<"Standard Deviation :"<<findStdDev()<<endl;;
