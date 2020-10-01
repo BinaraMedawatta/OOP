@@ -177,6 +177,7 @@ char getGrade(int n){
 	else if(n>=55) return 'B';
 	else if(n>=40) return 'C';
 	else if(n>=30) return 'D';
+	else if(n>=20) return 'E';
 	else return 'F';
 }
 
